@@ -54,10 +54,21 @@ class Database:
     async def get_all_users(self):
         return self.col.find({})
 
-
-
     async def delete_user(self, user_id):
         await self.col.delete_many({'id': int(user_id)})
+
+    async def add_clone(self, user_id, bot_token):
+        """Add a bot clone for a user."""
+        clone_data = {"user_id": user_id, "bot_token": bot_token}
+        await self.db.clones.insert_one(clone_data)
+
+    async def get_clone(self, user_id):
+        """Retrieve a user's clone."""
+        return await self.db.clones.find_one({"user_id": user_id})
+
+    async def remove_clone(self, user_id):
+        """Remove a user's bot clone."""
+        await self.db.clones.delete_one({"user_id": user_id})
 
 
 db = Database(DATABASE_URI, DATABASE_NAME)

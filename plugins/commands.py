@@ -357,7 +357,7 @@ async def shortener_api_handler(client, m: Message):
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
-@bot.on_callback_query(filters.regex("create_clone"))
+@Client.on_callback_query(filters.regex("create_clone"))
 async def create_clone(client, query):
     user_id = query.from_user.id
     
@@ -374,7 +374,7 @@ async def create_clone(client, query):
         "Forward a message from @BotFather here to create your bot."
     )
 
-@bot.on_message(filters.forwarded & filters.private)
+@Client.on_message(filters.forwarded & filters.private)
 async def handle_botfather_message(client, message):
     user_id = message.from_user.id
 
@@ -403,7 +403,7 @@ async def handle_botfather_message(client, message):
     else:
         await message.reply_text("Please forward a valid message from BotFather.")
         
-@bot.on_callback_query(filters.regex("manage_clone"))
+@Client.on_callback_query(filters.regex("manage_clone"))
 async def manage_clone(client, query):
     user_id = query.from_user.id
     existing_clone = await db.get_clone(user_id)
@@ -419,7 +419,7 @@ async def manage_clone(client, query):
     else:
         await query.message.edit_text("You don't have any bots yet.")
 
-@bot.on_callback_query(filters.regex("delete_clone"))
+@Client.on_callback_query(filters.regex("delete_clone"))
 async def delete_clone(client, query):
     user_id = query.from_user.id
     await db.remove_clone(user_id)

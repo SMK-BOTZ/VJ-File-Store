@@ -358,13 +358,18 @@ async def handle_botfather_message(client, message):
 
     # Check if the message contains a bot token
     if "bot token" in message.text.lower():
-        bot_token = message.text.split(":")[1].strip()
+        try:
+            bot_token = message.text.split(":")[1].strip()
+            full_token = f"{message.text.split(':')[0]}:{bot_token}"  # Full token reconstruction
 
-        # Save the bot token
-        await add_clone(user_id, bot_token)
-        await message.reply_text("Your bot has been created successfully!")
+            # Save the bot token
+            await add_clone(user_id, full_token)
+            await message.reply_text("Your bot has been created successfully!")
+        except Exception as e:
+            await message.reply_text(f"An error occurred while processing your bot: {e}")
     else:
         await message.reply_text("Please forward a valid BotFather message.")
+
 
 @Client.on_callback_query(filters.regex("manage_clone"))
 async def manage_clone(client, query):
@@ -373,15 +378,17 @@ async def manage_clone(client, query):
 
     if clone_bot:
         await query.message.edit_text(
-            f"Your bot token: {clone_bot['bot_token']}\n\n"
+            f"Your bot token: `{clone_bot['bot_token']}`\n\n"
             "What would you like to do?",
             reply_markup=InlineKeyboardMarkup([
                 [InlineKeyboardButton("Delete Bot", callback_data="delete_clone")],
                 [InlineKeyboardButton("Back", callback_data="start_menu")],
-            ])
+            ]),
+            parse_mode="Markdown"
         )
     else:
         await query.message.edit_text("You don't have any bots yet.")
+
 
 @Client.on_callback_query(filters.regex("delete_clone"))
 async def delete_clone_handler(client, query):
@@ -501,7 +508,18 @@ async def cb_handler(client: Client, query: CallbackQuery):
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
-    
+    async def add_clone(user_id, bot_token):
+    user_id = int(user_id)
+    clone_data = {"bot_token": bot_token}
+    print(f"Adding clone bot for user {user_id}: {clone_data}")  # Debug log
+    await update_user_info(user_id, {"clone_bot": clone_data})
+
+async def get_clone(user_id):
+    user_id = int(user_id)
+    user = await get_user(user_id)
+    print(f"Retrieving clone bot for user {user_id}: {user.get('clone_bot')}")  # Debug log
+    return user.get("clone_bot")
+
     elif query.data == "clone":
         buttons = [[
             InlineKeyboardButton('Hᴏᴍᴇ', callback_data='start'),

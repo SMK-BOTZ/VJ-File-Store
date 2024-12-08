@@ -1,7 +1,7 @@
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
-
+from clone_plugins.users_api import add_clone, get_clone, delete_clone, get_user
 import os
 import logging
 import random
@@ -56,8 +56,8 @@ async def start(client, message):
         buttons = [[
             InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
             ],[
-            InlineKeyboardButton('🔍 sᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ', url='https://t.me/vj_bot_disscussion'),
-            InlineKeyboardButton('🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ', url='https://t.me/vj_botz')
+            InlineKeyboardButton("Manage Your Bot", callback_data="manage_clone"),
+            InlineKeyboardButton("Create Your Bot", callback_data="create_clone")
             ],[
             InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
             InlineKeyboardButton('😊 ᴀʙᴏᴜᴛ', callback_data='about')
@@ -338,6 +338,74 @@ async def start(client, message):
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
+@Client.on_callback_query(filters.regex("create_clone"))
+async def create_clone(client, query):
+    user_id = query.from_user.id
+
+    # Check if user already has a bot
+    existing_clone = await get_clone(user_id)
+    if existing_clone:
+        await query.message.edit_text("You already have a bot!")
+        return
+
+    await query.message.edit_text(
+        "Please forward a message from @BotFather to create your bot."
+    )
+
+@Client.on_message(filters.forwarded & filters.private)
+async def handle_botfather_message(client, message):
+    user_id = message.from_user.id
+
+    # Check if the message contains a bot token
+    if "bot token" in message.text.lower():
+        bot_token = message.text.split(":")[1].strip()
+
+        # Save the bot token
+        await add_clone(user_id, bot_token)
+        await message.reply_text("Your bot has been created successfully!")
+    else:
+        await message.reply_text("Please forward a valid BotFather message.")
+
+@Client.on_callback_query(filters.regex("manage_clone"))
+async def manage_clone(client, query):
+    user_id = query.from_user.id
+    clone_bot = await get_clone(user_id)
+
+    if clone_bot:
+        await query.message.edit_text(
+            f"Your bot token: {clone_bot['bot_token']}\n\n"
+            "What would you like to do?",
+            reply_markup=InlineKeyboardMarkup([
+                [InlineKeyboardButton("Delete Bot", callback_data="delete_clone")],
+                [InlineKeyboardButton("Back", callback_data="start_menu")],
+            ])
+        )
+    else:
+        await query.message.edit_text("You don't have any bots yet.")
+
+@Client.on_callback_query(filters.regex("delete_clone"))
+async def delete_clone_handler(client, query):
+    user_id = query.from_user.id
+
+    # Delete the clone bot
+    await delete_clone(user_id)
+    await query.message.edit_text("Your bot has been deleted successfully.")
+
+@Client.on_callback_query(filters.regex("start_menu"))
+async def back_to_menu(client, query):
+    user_id = query.from_user.id
+
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("Create Your Bot", callback_data="create_clone")],
+        [InlineKeyboardButton("Manage Your Bot", callback_data="manage_clone")],
+    ])
+
+    await query.message.edit_text(
+        "Welcome back to the main menu. Choose an option below:",
+        reply_markup=keyboard
+    )
+
+
 @Client.on_message(filters.command('api') & filters.private)
 async def shortener_api_handler(client, m: Message):
     user_id = m.from_user.id
@@ -410,10 +478,8 @@ async def cb_handler(client: Client, query: CallbackQuery):
         buttons = [[
             InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
             ],[
-            InlineKeyboardButton('🔍 sᴜᴘᴘᴏʀᴛ ɢʀᴏᴜᴘ', url='https://t.me/vj_bot_disscussion'),
-            InlineKeyboardButton('🤖 ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ', url='https://t.me/vj_botz')
-            ],[
-            InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', callback_data='clone')
+            InlineKeyboardButton("Manage Your Bot", callback_data="manage_clone"),
+            InlineKeyboardButton("Create Your Bot", callback_data="create_clone")
             ],[
             InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
             InlineKeyboardButton('😊 ᴀʙᴏᴜᴛ', callback_data='about')

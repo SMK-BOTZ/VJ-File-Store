@@ -65,11 +65,10 @@ async def start(client, message):
         InlineKeyboardButton('ᴀʙᴏᴜᴛ ', callback_data='about')
     ]]
 
-    # Add Update Channel button if available
-    if cd["update_channel_link"] is not None:
-        up = cd["update_channel_link"]
-        buttons.append([InlineKeyboardButton(' ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇl ', url=up)])
-
+    # Add Update Channel button if availabl
+        if cd["update_channel_link"] != None:
+            up = cd["update_channel_link"]
+            buttons.append([InlineKeyboardButton('🍿 ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ 🍿', url=up)])
     reply_markup = InlineKeyboardMarkup(buttons)
 
     # Load or use default start text

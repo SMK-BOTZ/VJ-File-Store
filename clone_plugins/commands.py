@@ -174,8 +174,8 @@ def load_start_text():
     if os.path.exists(START_TEXT_FILE):
         with open(START_TEXT_FILE, "r") as file:
             data = json.load(file)
-            return data.get("start_text", CLONE_START_TXT)
-    return CLONE_START_TXT
+            return data.get("start_text", script.CLONE_START_TXT)
+    return script.CLONE_START_TXT
 
 # Save custom start text to file
 def save_start_text(text):

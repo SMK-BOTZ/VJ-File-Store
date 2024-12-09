@@ -200,17 +200,39 @@ def save_start_text(text):
 # Command to set custom start text (Owner only)
 @Client.on_message(filters.command("start_text") & filters.private)
 async def set_start_text(client, message):
-    if message.from_user.id != 7357726710:  # Replace with your Telegram ID
-        await message.reply("You are not authorized to use this command.")
+    # Fetch the bot's information
+    me = await client.get_me()
+    bot_id = me.id
+
+    # Fetch the bot's owner details from the database
+    owner = mongo_db.bots.find_one({'bot_id': bot_id})
+    
+    # Validate if the bot has an owner
+    if not owner:
+        await message.reply("**Owner details not found in the database.**")
         return
 
+    owner_id = int(owner['user_id'])
+
+    # Check if the user invoking the command is the bot owner
+    if message.from_user.id != owner_id:
+        await message.reply("❌ **You are not authorized to use this command.**")
+        return
+
+    # Check if a new start text is provided
     if len(message.command) < 2:
-        await message.reply("Please provide the new start text. Usage: `/start_text <new_text>`")
+        await message.reply("❌ **Please provide the new start text. Usage: /start_text <new_text>**")
         return
 
+    # Join the command arguments into the new start text
     new_text = " ".join(message.command[1:])
+    
+    # Save the new start text
     save_start_text(new_text)
-    await message.reply(f"Start text updated to:\n\n{new_text}")
+    
+    # Confirm the update
+    await message.reply(f"✅ **Start text updated to:**\n\n{new_text}")
+
 
 @Client.on_message(filters.command("base_site") & filters.private)
 async def base_site_handler(client, m: Message):
@@ -236,19 +258,43 @@ async def base_site_handler(client, m: Message):
 
 @Client.on_message(filters.command("settings") & filters.private)
 async def settings(client, message):
+    # Get the bot's information
     me = await client.get_me()
-    owner = await db.get_bot(me.id)
-    if owner["user_id"] != message.from_user.id:
+    bot_id = me.id
+
+    # Fetch the bot's owner details from the database
+    owner = mongo_db.bots.find_one({'bot_id': bot_id})
+    
+    # Validate if the bot has an owner
+    if not owner:
+        await message.reply("**Owner details not found in the database.**")
         return
-    link = await client.ask(message.chat.id, "<b>Now Send Me Your Update Channel Link Which Is Shown In Your Start Button And Below File Button.</b>")
+
+    owner_id = int(owner['user_id'])
+
+    # Check if the user invoking the command is the bot owner
+    if message.from_user.id != owner_id:
+        await message.reply("❌ **You are not authorized to access these settings.**")
+        return
+
+    # Ask the owner for the update channel link
+    link = await client.ask(
+        message.chat.id,
+        "<b>Now Send Me Your Update Channel Link, Which Will Be Shown In Your Start Button And Below File Button.</b>"
+    )
+
+    # Validate the link format
     if not link.text.startswith(('https://', 'http://')):
-        await message.reply("**Invalid Link. Start The Process Again By - /settings**")
-        return 
-    data = {
-        'update_channel_link': link.text
-    }
-    await db.update_bot(me.id, data)
-    await message.reply("**Successfully Added Update Channel Link**")
+        await message.reply("❌ **Invalid Link. Please start the process again by using - /settings.**")
+        return
+
+    # Update the bot's settings in the database
+    data = {'update_channel_link': link.text}
+    mongo_db.bots.update_one({'bot_id': bot_id}, {'$set': data})
+
+    # Confirmation message
+    await message.reply("✅ **Successfully Added Update Channel Link.**")
+
 
 
 @Client.on_callback_query()

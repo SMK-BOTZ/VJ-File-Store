@@ -202,14 +202,6 @@ async def set_start_text(client, message):
     save_start_text(new_text)
     await message.reply(f"Start text updated to:\n\n{new_text}")
 
-# Command to handle /start
-@Client.on_message(filters.command("start") & filters.private)
-async def start_command(client, message):
-    bot_name = client.me.first_name  # Bot's name
-    user_name = message.from_user.first_name  # User's name
-    start_text = load_start_text()
-    await message.reply(start_text.format(user_name, bot_name))
-
 @Client.on_message(filters.command("base_site") & filters.private)
 async def base_site_handler(client, m: Message):
     user_id = m.from_user.id

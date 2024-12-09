@@ -70,7 +70,7 @@ async def start(client, message):
     try:
         start_text = load_start_text()  # Function to load the start text
     except Exception:
-        start_text = script.CLONE_START_TXT  # Fallback to default
+        start_text = CLONE_START_TXT  # Fallback to default
     
     # Format the start message
     start_message = start_text.format(message.from_user.mention, me2)
@@ -166,6 +166,11 @@ async def shortener_api_handler(client, m: Message):
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
+# Default start text
+CLONE_START_TXT = """<b>Hᴇʟʟᴏ {}, ᴍʏ ɴᴀᴍᴇ {}, 【ɪ ᴀᴍ ʟᴀᴛᴇꜱᴛ ᴀᴅᴠᴀɴᴄᴇᴅ】ᴀɴᴅ ᴘᴏᴡᴇʀꜰᴜʟ ꜰɪʟᴇ ꜱᴛᴏʀᴇ ʙᴏᴛ +├ᴄᴜꜱᴛᴏᴍ ᴜʀʟ ꜱʜᴏʀᴛɴᴇʀ ꜱᴜᴘᴘᴏʀᴛ┤+  ᢵᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ sᴜᴘᴘᴏʀᴛ ᢴ ᢾᴀɴᴅ ʙᴇꜱᴛ ᴜɪ ᴘᴇʀꜰᴏʀᴍᴀɴᴄᴇᢿ
+
+ɪғ ʏᴏᴜ ᴡᴀɴᴛ ᴛʜɪs ғᴇᴀᴛᴜʀᴇ ᴛʜᴇɴ ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ ғʀᴏᴍ ᴍʏ <a href=https://t.me/vj_botz>ᴘᴀʀᴇɴᴛ</a></b>"""
+
 # File to store custom start text
 START_TEXT_FILE = "start_text.json"
 
@@ -174,8 +179,8 @@ def load_start_text():
     if os.path.exists(START_TEXT_FILE):
         with open(START_TEXT_FILE, "r") as file:
             data = json.load(file)
-            return data.get("start_text", script.CLONE_START_TXT)
-    return script.CLONE_START_TXT
+            return data.get("start_text", CLONE_START_TXT)
+    return CLONE_START_TXT
 
 # Save custom start text to file
 def save_start_text(text):
@@ -185,7 +190,7 @@ def save_start_text(text):
 # Command to set custom start text (Owner only)
 @Client.on_message(filters.command("start_text") & filters.private)
 async def set_start_text(client, message):
-    if message.from_user.id != 7357726710:  # Replace with your Telegram ID
+    if message.from_user.id != 93372553:  # Replace with your Telegram ID
         await message.reply("You are not authorized to use this command.")
         return
 
@@ -197,6 +202,13 @@ async def set_start_text(client, message):
     save_start_text(new_text)
     await message.reply(f"Start text updated to:\n\n{new_text}")
 
+# Command to handle /start
+@Client.on_message(filters.command("start") & filters.private)
+async def start_command(client, message):
+    bot_name = client.me.first_name  # Bot's name
+    user_name = message.from_user.first_name  # User's name
+    start_text = load_start_text()
+    await message.reply(start_text.format(user_name, bot_name))
 
 @Client.on_message(filters.command("base_site") & filters.private)
 async def base_site_handler(client, m: Message):
@@ -226,27 +238,42 @@ async def cb_handler(client: Client, query: CallbackQuery):
     if query.data == "close_data":
         await query.message.delete()
     elif query.data == "start":
+        # Default buttons
         buttons = [[
             InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
-            ],[
+        ], [
             InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
-            ],[
+        ], [
             InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
             InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
         ]]
         
         reply_markup = InlineKeyboardMarkup(buttons)
-        await client.edit_message_media(
-            query.message.chat.id, 
-            query.message.id, 
-            InputMediaPhoto(random.choice(PICS))
-        )
+        
+        # Get bot and user information
         me2 = (await client.get_me()).mention
+        
+        # Load custom start text or use default
+        try:
+            start_text = load_start_text()  # Function to load the start text
+        except Exception:
+            start_text = CLONE_START_TXT  # Fallback to default
+        
+        # Format the start message
+        start_message = start_text.format(query.from_user.mention, me2)
+        
+        # Update the media and text
+        await client.edit_message_media(
+            chat_id=query.message.chat.id,
+            message_id=query.message.id,
+            media=InputMediaPhoto(random.choice(PICS))
+        )
         await query.message.edit_text(
-            text=script.CLONE_START_TXT.format(query.from_user.mention, me2),
+            text=start_message,
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
+
 
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ

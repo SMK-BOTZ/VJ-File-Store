@@ -313,9 +313,9 @@ async def cb_handler(client: Client, query: CallbackQuery):
         # Add "Join Update Channel" button if configured
         me = await client.get_me()
         cd = await db.get_bot(me.id)
-        if cd["update_channel_link"] is not None:
-            buttons.append([InlineKeyboardButton(' ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇl ', url=cd["update_channel_link"])])
-        
+        if cd["update_channel_link"] != None:
+            up = cd["update_channel_link"]
+            buttons.append([InlineKeyboardButton('🍿 ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ 🍿', url=up)])
         reply_markup = InlineKeyboardMarkup(buttons)
 
         # Get bot and user information

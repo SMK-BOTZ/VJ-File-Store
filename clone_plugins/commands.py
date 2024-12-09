@@ -55,8 +55,12 @@ async def start(client, message):
     # Try to load custom button from file
     try:
         with open("button1.txt", "r") as f:
-            btn_text, btn_url = f.read().strip().split("|")
-        custom_button = [InlineKeyboardButton(btn_text, url=btn_url)]
+            content = f.read().strip()
+            if "|" in content:
+                btn_text, btn_url = content.split("|")
+                custom_button = [InlineKeyboardButton(btn_text, url=btn_url)]
+            else:
+                custom_button = None
     except FileNotFoundError:
         custom_button = None  # No custom button found
 
@@ -92,11 +96,14 @@ async def start(client, message):
     start_message = start_text.format(message.from_user.mention, me2)
     
     # Send the start message with the random photo and buttons
+    if not PICS:
+        raise ValueError("PICS list is empty. Add at least one image.")
     await message.reply_photo(
         photo=random.choice(PICS),
         caption=start_message,
         reply_markup=reply_markup
     )
+
 
 
 # Don't Remove Credit Tg - @VJ_Botz
@@ -267,10 +274,14 @@ async def cb_handler(client: Client, query: CallbackQuery):
         # Try to load custom button from file
         try:
             with open("button1.txt", "r") as f:
-                btn_text, btn_url = f.read().strip().split("|")
-            custom_button = [InlineKeyboardButton(btn_text, url=btn_url)]
-        except FileNotFoundError:
-            custom_button = None  # No custom button found
+                content = f.read().strip()
+                if "|" in content:
+                    btn_text, btn_url = content.split("|", 1)
+                    custom_button = [InlineKeyboardButton(btn_text, url=btn_url)]
+                else:
+                    custom_button = None
+        except (FileNotFoundError, ValueError):
+            custom_button = None  # No custom button or invalid content
         
         # Prepare buttons
         buttons = []
@@ -302,6 +313,10 @@ async def cb_handler(client: Client, query: CallbackQuery):
         # Format the start message
         start_message = start_text.format(query.from_user.mention, me2)
         
+        # Validate PICS list
+        if not PICS:
+            raise ValueError("PICS list is empty. Add at least one image.")
+        
         # Update the media and text
         await client.edit_message_media(
             chat_id=query.message.chat.id,
@@ -313,6 +328,9 @@ async def cb_handler(client: Client, query: CallbackQuery):
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
+    else:
+        await query.answer("Unknown action!", show_alert=True)
+
 
 
 

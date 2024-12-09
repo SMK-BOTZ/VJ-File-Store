@@ -57,18 +57,18 @@ async def start(client, message):
 
     # Default buttons
     buttons = [[
-        InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
+        InlineKeyboardButton(' sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇl', url='https://youtube.com/@Tech_VJ')
     ], [
-        InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{me.username}?start=clone')
+        InlineKeyboardButton(' ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{me.username}?start=clone')
     ], [
-        InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
-        InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
+        InlineKeyboardButton('‍♀️ ʜᴇʟᴘ', callback_data='help'),
+        InlineKeyboardButton('ᴀʙᴏᴜᴛ ', callback_data='about')
     ]]
 
     # Add Update Channel button if available
     if cd["update_channel_link"] is not None:
         up = cd["update_channel_link"]
-        buttons.append([InlineKeyboardButton('🍿 ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ 🍿', url=up)])
+        buttons.append([InlineKeyboardButton(' ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇl ', url=up)])
 
     reply_markup = InlineKeyboardMarkup(buttons)
 
@@ -85,13 +85,12 @@ async def start(client, message):
         me.first_name
     )
 
-    # Send the start message with a random photo
-    await message.reply_photo(
-        photo=random.choice(PICS),  # Assuming PICS is a list of image URLs or file IDs
-        caption=start_message,
+    # Send the start message without the photo
+    await message.reply(
+        text=start_message,
         reply_markup=reply_markup
     )
-
+    
 
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
@@ -304,19 +303,19 @@ async def cb_handler(client: Client, query: CallbackQuery):
     elif query.data == "start":
         # Default buttons
         buttons = [[
-            InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
+            InlineKeyboardButton(' sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇl', url='https://youtube.com/@Tech_VJ')
         ], [
-            InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
+            InlineKeyboardButton(' ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
         ], [
-            InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
-            InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
+            InlineKeyboardButton('‍♀️ ʜᴇʟᴘ', callback_data='help'),
+            InlineKeyboardButton('ᴀʙᴏᴜᴛ ', callback_data='about')
         ]]
         
         # Add "Join Update Channel" button if configured
         me = await client.get_me()
         cd = await db.get_bot(me.id)
         if cd["update_channel_link"] is not None:
-            buttons.append([InlineKeyboardButton('🍿 ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ 🍿', url=cd["update_channel_link"])])
+            buttons.append([InlineKeyboardButton(' ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇl ', url=cd["update_channel_link"])])
         
         reply_markup = InlineKeyboardMarkup(buttons)
 
@@ -332,21 +331,15 @@ async def cb_handler(client: Client, query: CallbackQuery):
         # Format the start message
         start_message = start_text.format(query.from_user.mention, me2)
         
-        # Update the media (photo) and text
-        await client.edit_message_media(
-            chat_id=query.message.chat.id,
-            message_id=query.message.id,
-            media=InputMediaPhoto(random.choice(PICS))  # Assuming `PICS` is a list of image URLs or file IDs
-        )
+        # Update the text only
         await query.message.edit_text(
             text=start_message,
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
-        )
+         )
 
 
-
-# Don't Remove Credit Tg - @VJ_Botz
+# Don' Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 

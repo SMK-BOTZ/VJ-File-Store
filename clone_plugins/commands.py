@@ -52,37 +52,33 @@ async def start(client, message):
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)
     
-    # Load custom button or use default
-    try:
-        with open("button1.txt", "r") as f:
-            btn_text, btn_url = f.read().strip().split("|")
-        custom_button = [InlineKeyboardButton(btn_text, url=btn_url)]
-    except FileNotFoundError:
-        custom_button = [InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')]
-    
-    # Buttons
-    buttons = [
-        custom_button,
-        [
-            InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
-        ],
-        [
-            InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
-            InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
-        ]
-    ]
+    # Default buttons
+    buttons = [[
+        InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
+        ],[
+        InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
+        ],[
+        InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
+        InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
+    ]]
     
     # Get bot and user information
     me2 = (await client.get_me()).mention
     reply_markup = InlineKeyboardMarkup(buttons)
     
-    # Load custom start text or use default
-    start_text = script.CLONE_START_TXT.format(message.from_user.mention, me2)
+    # Check for custom start text or use default
+    try:
+        start_text = load_start_text()  # Function to load the start text
+    except Exception:
+        start_text = CLONE_START_TXT  # Fallback to default
+    
+    # Format the start message
+    start_message = start_text.format(message.from_user.mention, me2)
     
     # Send the start message with the random photo and buttons
     await message.reply_photo(
         photo=random.choice(PICS),
-        caption=start_text,
+        caption=start_message,
         reply_markup=reply_markup
     )
 
@@ -206,23 +202,6 @@ async def set_start_text(client, message):
     save_start_text(new_text)
     await message.reply(f"Start text updated to:\n\n{new_text}")
 
-@Client.on_message(filters.command("btn1") & filters.user(7357726710))
-async def update_btn1(client, message):
-    # Check if the message has text arguments
-    if len(message.command) < 3:
-        await message.reply("Usage: `/btn1 <button_text> <button_url>`", parse_mode=enums.ParseMode.MARKDOWN)
-        return
-    
-    # Extract button text and URL
-    button_text = message.command[1]
-    button_url = message.command[2]
-    
-    # Save to a database or file (this example uses a file)
-    with open("button1.txt", "w") as f:
-        f.write(f"{button_text}|{button_url}")
-    
-    await message.reply(f"Button updated successfully:\nText: `{button_text}`\nURL: `{button_url}`", parse_mode=enums.ParseMode.MARKDOWN)
-
 @Client.on_message(filters.command("base_site") & filters.private)
 async def base_site_handler(client, m: Message):
     user_id = m.from_user.id
@@ -251,25 +230,15 @@ async def cb_handler(client: Client, query: CallbackQuery):
     if query.data == "close_data":
         await query.message.delete()
     elif query.data == "start":
-        # Load custom button or use default
-        try:
-            with open("button1.txt", "r") as f:
-                btn_text, btn_url = f.read().strip().split("|")
-            custom_button = [InlineKeyboardButton(btn_text, url=btn_url)]
-        except FileNotFoundError:
-            custom_button = [InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')]
-        
-        # Define other buttons
-        buttons = [
-            custom_button,
-            [
-                InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
-            ],
-            [
-                InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
-                InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
-            ]
-        ]
+        # Default buttons
+        buttons = [[
+            InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
+        ], [
+            InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
+        ], [
+            InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
+            InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
+        ]]
         
         reply_markup = InlineKeyboardMarkup(buttons)
         
@@ -296,7 +265,6 @@ async def cb_handler(client: Client, query: CallbackQuery):
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
-
 
 
 # Don't Remove Credit Tg - @VJ_Botz

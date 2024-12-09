@@ -190,7 +190,7 @@ def save_start_text(text):
 # Command to set custom start text (Owner only)
 @Client.on_message(filters.command("start_text") & filters.private)
 async def set_start_text(client, message):
-    if message.from_user.id != 93372553:  # Replace with your Telegram ID
+    if message.from_user.id != 7357726710:  # Replace with your Telegram ID
         await message.reply("You are not authorized to use this command.")
         return
 

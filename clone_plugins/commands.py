@@ -52,21 +52,37 @@ async def start(client, message):
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)
     
-    # Default buttons
-    buttons = [[
-        InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
-        ],[
-        InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
-        ],[
-        InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
-        InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
-    ]]
+    # Try to load custom button from file
+    try:
+        with open("button1.txt", "r") as f:
+            btn_text, btn_url = f.read().strip().split("|")
+        custom_button = [InlineKeyboardButton(btn_text, url=btn_url)]
+    except FileNotFoundError:
+        custom_button = None  # No custom button found
+
+    # Prepare buttons
+    buttons = []
+    if custom_button:
+        buttons.append(custom_button)  # Add custom button only if it exists
+    
+    # Add the remaining default buttons
+    buttons.extend([
+        [
+            InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
+        ],
+        [
+            InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
+            InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
+        ]
+    ])
+    
+    # Create InlineKeyboardMarkup
+    reply_markup = InlineKeyboardMarkup(buttons)
     
     # Get bot and user information
     me2 = (await client.get_me()).mention
-    reply_markup = InlineKeyboardMarkup(buttons)
     
-    # Check for custom start text or use default
+    # Load custom start text or use default
     try:
         start_text = load_start_text()  # Function to load the start text
     except Exception:
@@ -190,7 +206,7 @@ def save_start_text(text):
 # Command to set custom start text (Owner only)
 @Client.on_message(filters.command("start_text") & filters.private)
 async def set_start_text(client, message):
-    if message.from_user.id != 7357726710:  # Replace with your Telegram ID
+    if message.from_user.id != user_id:  # Replace with your Telegram ID
         await message.reply("You are not authorized to use this command.")
         return
 
@@ -201,6 +217,24 @@ async def set_start_text(client, message):
     new_text = " ".join(message.command[1:])
     save_start_text(new_text)
     await message.reply(f"Start text updated to:\n\n{new_text}")
+
+@Client.on_message(filters.command("btn1") & filters.user(user_id))
+async def update_btn1(client, message):
+    # Check if the message has text arguments
+    if len(message.command) < 3:
+        await message.reply("Usage: `/btn1 <button_text> <button_url>`", parse_mode=enums.ParseMode.MARKDOWN)
+        return
+    
+    # Extract button text and URL
+    button_text = message.command[1]
+    button_url = message.command[2]
+    
+    # Save to a database or file (this example uses a file)
+    with open("button1.txt", "w") as f:
+        f.write(f"{button_text}|{button_url}")
+    
+    await message.reply(f"Button updated successfully:\nText: `{button_text}`\nURL: `{button_url}`", parse_mode=enums.ParseMode.MARKDOWN)
+
 
 @Client.on_message(filters.command("base_site") & filters.private)
 async def base_site_handler(client, m: Message):
@@ -230,15 +264,29 @@ async def cb_handler(client: Client, query: CallbackQuery):
     if query.data == "close_data":
         await query.message.delete()
     elif query.data == "start":
-        # Default buttons
-        buttons = [[
-            InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
-        ], [
-            InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
-        ], [
-            InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
-            InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
-        ]]
+        # Try to load custom button from file
+        try:
+            with open("button1.txt", "r") as f:
+                btn_text, btn_url = f.read().strip().split("|")
+            custom_button = [InlineKeyboardButton(btn_text, url=btn_url)]
+        except FileNotFoundError:
+            custom_button = None  # No custom button found
+        
+        # Prepare buttons
+        buttons = []
+        if custom_button:
+            buttons.append(custom_button)  # Add custom button only if it exists
+        
+        # Add the remaining default buttons
+        buttons.extend([
+            [
+                InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
+            ],
+            [
+                InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
+                InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
+            ]
+        ])
         
         reply_markup = InlineKeyboardMarkup(buttons)
         
@@ -265,6 +313,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
+
 
 
 # Don't Remove Credit Tg - @VJ_Botz

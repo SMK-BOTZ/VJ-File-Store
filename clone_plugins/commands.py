@@ -48,36 +48,46 @@ def get_size(size):
 
 @Client.on_message(filters.command("start") & filters.incoming)
 async def start(client, message):
+    me = await client.get_me()
+    cd = await db.get_bot(me.id)
+
     # Check if the user exists in the database, otherwise add them
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)
-    
+
     # Default buttons
     buttons = [[
         InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
-        ],[
-        InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
-        ],[
+    ], [
+        InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{me.username}?start=clone')
+    ], [
         InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
         InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
     ]]
-    
-    # Get bot and user information
-    me2 = (await client.get_me()).mention
+
+    # Add Update Channel button if available
+    if cd["update_channel_link"] is not None:
+        up = cd["update_channel_link"]
+        buttons.append([InlineKeyboardButton('🍿 ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ 🍿', url=up)])
+
     reply_markup = InlineKeyboardMarkup(buttons)
-    
-    # Check for custom start text or use default
+
+    # Load or use default start text
     try:
         start_text = load_start_text()  # Function to load the start text
     except Exception:
         start_text = CLONE_START_TXT  # Fallback to default
-    
+
     # Format the start message
-    start_message = start_text.format(message.from_user.mention, me2)
-    
-    # Send the start message with the random photo and buttons
+    start_message = start_text.format(
+        message.from_user.mention,
+        me.username,
+        me.first_name
+    )
+
+    # Send the start message with a random photo
     await message.reply_photo(
-        photo=random.choice(PICS),
+        photo=random.choice(PICS),  # Assuming PICS is a list of image URLs or file IDs
         caption=start_message,
         reply_markup=reply_markup
     )
@@ -224,6 +234,22 @@ async def base_site_handler(client, m: Message):
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
+@Client.on_message(filters.command("settings") & filters.private)
+async def settings(client, message):
+    me = await client.get_me()
+    owner = await db.get_bot(me.id)
+    if owner["user_id"] != message.from_user.id:
+        return
+    link = await client.ask(message.chat.id, "<b>Now Send Me Your Update Channel Link Which Is Shown In Your Start Button And Below File Button.</b>")
+    if not link.text.startswith(('https://', 'http://')):
+        await message.reply("**Invalid Link. Start The Process Again By - /settings**")
+        return 
+    data = {
+        'update_channel_link': link.text
+    }
+    await db.update_bot(me.id, data)
+    await message.reply("**Successfully Added Update Channel Link**")
+
 
 @Client.on_callback_query()
 async def cb_handler(client: Client, query: CallbackQuery):
@@ -240,10 +266,16 @@ async def cb_handler(client: Client, query: CallbackQuery):
             InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
         ]]
         
-        reply_markup = InlineKeyboardMarkup(buttons)
+        # Add "Join Update Channel" button if configured
+        me = await client.get_me()
+        cd = await db.get_bot(me.id)
+        if cd["update_channel_link"] is not None:
+            buttons.append([InlineKeyboardButton('🍿 ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ 🍿', url=cd["update_channel_link"])])
         
+        reply_markup = InlineKeyboardMarkup(buttons)
+
         # Get bot and user information
-        me2 = (await client.get_me()).mention
+        me2 = me.mention
         
         # Load custom start text or use default
         try:
@@ -254,17 +286,18 @@ async def cb_handler(client: Client, query: CallbackQuery):
         # Format the start message
         start_message = start_text.format(query.from_user.mention, me2)
         
-        # Update the media and text
+        # Update the media (photo) and text
         await client.edit_message_media(
             chat_id=query.message.chat.id,
             message_id=query.message.id,
-            media=InputMediaPhoto(random.choice(PICS))
+            media=InputMediaPhoto(random.choice(PICS))  # Assuming `PICS` is a list of image URLs or file IDs
         )
         await query.message.edit_text(
             text=start_message,
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
+
 
 
 # Don't Remove Credit Tg - @VJ_Botz

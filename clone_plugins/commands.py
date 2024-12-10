@@ -48,40 +48,25 @@ def get_size(size):
 
 @Client.on_message(filters.command("start") & filters.incoming)
 async def start(client, message):
-    # Check if the user exists in the database, otherwise add them
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)
-    
-    # Default buttons
-    buttons = [[
-        InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
-        ],[
-        InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
-        ],[
-        InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
-        InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
-    ]]
-    
-    # Get bot and user information
-    me2 = (await client.get_me()).mention
-    reply_markup = InlineKeyboardMarkup(buttons)
-    
-    # Check for custom start text or use default
-    try:
-        start_text = load_start_text()  # Function to load the start text
-    except Exception:
-        start_text = CLONE_START_TXT  # Fallback to default
-    
-    # Format the start message
-    start_message = start_text.format(message.from_user.mention, me2)
-    
-    # Send the start message with the random photo and buttons
-    await message.reply_photo(
-        photo=random.choice(PICS),
-        caption=start_message,
-        reply_markup=reply_markup
-    )
-
+    if len(message.command) != 2:
+        buttons = [[
+            InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
+            ],[
+            InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
+            ],[
+            InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
+            InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
+        ]]
+        me2 = (await client.get_me()).mention
+        reply_markup = InlineKeyboardMarkup(buttons)
+        await message.reply_photo(
+            photo=random.choice(PICS),
+            caption=script.CLONE_START_TXT.format(message.from_user.mention, me2),
+            reply_markup=reply_markup
+        )
+        return
 
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
@@ -166,42 +151,6 @@ async def shortener_api_handler(client, m: Message):
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
-# Default start text
-CLONE_START_TXT = """<b>Hᴇʟʟᴏ {}, ᴍʏ ɴᴀᴍᴇ {}, 【ɪ ᴀᴍ ʟᴀᴛᴇꜱᴛ ᴀᴅᴠᴀɴᴄᴇᴅ】ᴀɴᴅ ᴘᴏᴡᴇʀꜰᴜʟ ꜰɪʟᴇ ꜱᴛᴏʀᴇ ʙᴏᴛ +├ᴄᴜꜱᴛᴏᴍ ᴜʀʟ ꜱʜᴏʀᴛɴᴇʀ ꜱᴜᴘᴘᴏʀᴛ┤+  ᢵᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ sᴜᴘᴘᴏʀᴛ ᢴ ᢾᴀɴᴅ ʙᴇꜱᴛ ᴜɪ ᴘᴇʀꜰᴏʀᴍᴀɴᴄᴇᢿ
-
-ɪғ ʏᴏᴜ ᴡᴀɴᴛ ᴛʜɪs ғᴇᴀᴛᴜʀᴇ ᴛʜᴇɴ ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ ғʀᴏᴍ ᴍʏ <a href=https://t.me/vj_botz>ᴘᴀʀᴇɴᴛ</a></b>"""
-
-# File to store custom start text
-START_TEXT_FILE = "start_text.json"
-
-# Load start text from file or return default
-def load_start_text():
-    if os.path.exists(START_TEXT_FILE):
-        with open(START_TEXT_FILE, "r") as file:
-            data = json.load(file)
-            return data.get("start_text", CLONE_START_TXT)
-    return CLONE_START_TXT
-
-# Save custom start text to file
-def save_start_text(text):
-    with open(START_TEXT_FILE, "w") as file:
-        json.dump({"start_text": text}, file)
-
-# Command to set custom start text (Owner only)
-@Client.on_message(filters.command("start_text") & filters.private)
-async def set_start_text(client, message):
-    if message.from_user.id != 7357726710:  # Replace with your Telegram ID
-        await message.reply("You are not authorized to use this command.")
-        return
-
-    if len(message.command) < 2:
-        await message.reply("Please provide the new start text. Usage: `/start_text <new_text>`")
-        return
-
-    new_text = " ".join(message.command[1:])
-    save_start_text(new_text)
-    await message.reply(f"Start text updated to:\n\n{new_text}")
-
 @Client.on_message(filters.command("base_site") & filters.private)
 async def base_site_handler(client, m: Message):
     user_id = m.from_user.id
@@ -230,42 +179,27 @@ async def cb_handler(client: Client, query: CallbackQuery):
     if query.data == "close_data":
         await query.message.delete()
     elif query.data == "start":
-        # Default buttons
         buttons = [[
             InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
-        ], [
+            ],[
             InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
-        ], [
+            ],[
             InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
             InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
         ]]
         
         reply_markup = InlineKeyboardMarkup(buttons)
-        
-        # Get bot and user information
-        me2 = (await client.get_me()).mention
-        
-        # Load custom start text or use default
-        try:
-            start_text = load_start_text()  # Function to load the start text
-        except Exception:
-            start_text = CLONE_START_TXT  # Fallback to default
-        
-        # Format the start message
-        start_message = start_text.format(query.from_user.mention, me2)
-        
-        # Update the media and text
         await client.edit_message_media(
-            chat_id=query.message.chat.id,
-            message_id=query.message.id,
-            media=InputMediaPhoto(random.choice(PICS))
+            query.message.chat.id, 
+            query.message.id, 
+            InputMediaPhoto(random.choice(PICS))
         )
+        me2 = (await client.get_me()).mention
         await query.message.edit_text(
-            text=start_message,
+            text=script.CLONE_START_TXT.format(query.from_user.mention, me2),
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
-
 
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ

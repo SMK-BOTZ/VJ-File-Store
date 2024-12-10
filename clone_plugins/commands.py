@@ -9,7 +9,7 @@ import asyncio
 from Script import script
 from validators import domain
 from clone_plugins.dbusers import db
-from clone_plugins.users_api import get_user, update_user_info
+from clone_plugins.users_api import get_user, update_user_info, get_start_text, set_start_text, start_command_handler, set_start_text_command_handler
 from pyrogram import Client, filters, enums
 from plugins.database import get_file_details
 from pyrogram.errors import ChatAdminRequired, FloodWait
@@ -45,28 +45,63 @@ def get_size(size):
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
+# Dictionary to store custom start texts for each bot instance
+bot_start_texts = {}
 
 @Client.on_message(filters.command("start") & filters.incoming)
 async def start(client, message):
+    # Unique identifier for the bot instance
+    bot_id = (await client.get_me()).id
+    
+    # Check if user exists in the database
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)
+    
+    # If no arguments provided with the /start command
     if len(message.command) != 2:
+        # Fetch the custom or default start text
+        start_text = bot_start_texts.get(bot_id, CLONE_START_TXT)
+        
         buttons = [[
             InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
-            ],[
+        ],[
             InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
-            ],[
+        ],[
             InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
             InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
         ]]
-        me2 = (await client.get_me()).mention
         reply_markup = InlineKeyboardMarkup(buttons)
+        
+        # Get the bot mention
+        me2 = (await client.get_me()).mention
+
+        # Reply with the custom or default start text
         await message.reply_photo(
             photo=random.choice(PICS),
-            caption=script.CLONE_START_TXT.format(message.from_user.mention, me2),
+            caption=start_text.format(message.from_user.mention, me2),
             reply_markup=reply_markup
         )
         return
+
+@Client.on_message(filters.command("set_start_text") & filters.incoming)
+async def set_start_text(client, message):
+    """
+    Command to set a custom start text for this bot instance.
+    Usage: /set_start_text <new_text>
+    """
+    bot_id = (await client.get_me()).id
+
+    # Validate the command structure
+    if len(message.command) < 2:
+        await message.reply("Please provide the new start text. Usage: /set_start_text <new_text>")
+        return
+    
+    # Extract and save the new start text
+    new_text = " ".join(message.command[1:])
+    bot_start_texts[bot_id] = new_text
+
+    await message.reply("Start text updated successfully!")
+
 
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
@@ -176,30 +211,46 @@ async def base_site_handler(client, m: Message):
 
 @Client.on_callback_query()
 async def cb_handler(client: Client, query: CallbackQuery):
+    # Handle the "close_data" action
     if query.data == "close_data":
         await query.message.delete()
+    
+    # Handle the "start" action
     elif query.data == "start":
+        # Unique identifier for the bot instance
+        bot_id = (await client.get_me()).id
+        
+        # Fetch the custom or default start text
+        start_text = bot_start_texts.get(bot_id, CLONE_START_TXT)
+        
+        # Define buttons
         buttons = [[
             InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
-            ],[
+        ],[
             InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
-            ],[
+        ],[
             InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
             InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
         ]]
-        
         reply_markup = InlineKeyboardMarkup(buttons)
+        
+        # Edit the message media with a random photo
         await client.edit_message_media(
             query.message.chat.id, 
             query.message.id, 
             InputMediaPhoto(random.choice(PICS))
         )
+        
+        # Get the bot mention
         me2 = (await client.get_me()).mention
+        
+        # Edit the message text with the custom or default start text
         await query.message.edit_text(
-            text=script.CLONE_START_TXT.format(query.from_user.mention, me2),
+            text=start_text.format(query.from_user.mention, me2),
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
+
 
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
@@ -246,3 +297,5 @@ async def cb_handler(client: Client, query: CallbackQuery):
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
+
+# Dictionary to store start_text per bot instance

@@ -190,17 +190,38 @@ def save_start_text(text):
 # Command to set custom start text (Owner only)
 @Client.on_message(filters.command("start_text") & filters.private)
 async def set_start_text(client, message):
-    if message.from_user.id != 7357726710:  # Replace with your Telegram ID
-        await message.reply("You are not authorized to use this command.")
+    # Fetch the bot's information
+    me = await client.get_me()
+    bot_id = me.id
+
+    # Fetch the bot's owner details from the database
+    owner = mongo_db.bots.find_one({'bot_id': bot_id})
+    
+    # Validate if the bot has an owner
+    if not owner:
+        await message.reply("**Owner details not found in the database.**")
         return
 
+    owner_id = int(owner['user_id'])
+
+    # Check if the user invoking the command is the bot owner
+    if message.from_user.id != owner_id:
+        await message.reply("❌ **You are not authorized to use this command.**")
+        return
+
+    # Check if a new start text is provided
     if len(message.command) < 2:
-        await message.reply("Please provide the new start text. Usage: `/start_text <new_text>`")
+        await message.reply("❌ **Please provide the new start text. Usage: /start_text <new_text>**")
         return
 
+    # Join the command arguments into the new start text
     new_text = " ".join(message.command[1:])
+    
+    # Save the new start text
     save_start_text(new_text)
-    await message.reply(f"Start text updated to:\n\n{new_text}")
+    
+    # Confirm the update
+    await message.reply(f"✅ **Start text updated to:**\n\n{new_text}")
 
 @Client.on_message(filters.command("base_site") & filters.private)
 async def base_site_handler(client, m: Message):

@@ -89,4 +89,35 @@ async def delete_user(user_id):
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
+# Dictionary to store start_text per bot instance
+bot_start_texts = {}
+
+def get_start_text(bot_id):
+    """
+    Retrieve the /start_text for a specific bot instance.
+    If no custom text is set, return a default value.
+    """
+    return bot_start_texts.get(bot_id, "Welcome to this bot! Customize me using /set_start_text.")
+
+def set_start_text(bot_id, new_text):
+    """
+    Set a new /start_text for a specific bot instance.
+    """
+    bot_start_texts[bot_id] = new_text
+
+# Example command handlers
+def start_command_handler(bot_id):
+    """
+    Handle the /start command for a specific bot instance.
+    """
+    start_text = get_start_text(bot_id)
+    return f"{start_text}"
+
+def set_start_text_command_handler(bot_id, new_text):
+    """
+    Handle the /set_start_text command to update the start text.
+    """
+    set_start_text(bot_id, new_text)
+    return "Start text updated successfully!"
+
 

@@ -186,6 +186,64 @@ async def shortener_api_handler(client, m: Message):
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
+# Default start text
+CLONE_START_TXT = """<b>Hᴇʟʟᴏ {}, ᴍʏ ɴᴀᴍᴇ {}, 【ɪ ᴀᴍ ʟᴀᴛᴇꜱᴛ ᴀᴅᴠᴀɴᴄᴇᴅ】ᴀɴᴅ ᴘᴏᴡᴇʀꜰᴜʟ ꜰɪʟᴇ ꜱᴛᴏʀᴇ ʙᴏᴛ +├ᴄᴜꜱᴛᴏᴍ ᴜʀʟ ꜱʜᴏʀᴛɴᴇʀ ꜱᴜᴘᴘᴏʀᴛ┤+  ᢵᴀᴜᴛᴏ ᴅᴇʟᴇᴛᴇ sᴜᴘᴘᴏʀᴛ ᢴ ᢾᴀɴᴅ ʙᴇꜱᴛ ᴜɪ ᴘᴇʀꜰᴏʀᴍᴀɴᴄᴇᢿ
+
+ɪғ ʏᴏᴜ ᴡᴀɴᴛ ᴛʜɪs ғᴇᴀᴛᴜʀᴇ ᴛʜᴇɴ ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ ғʀᴏᴍ ᴍʏ <a href=https://t.me/vj_botz>ᴘᴀʀᴇɴᴛ</a></b>"""
+
+# File to store custom start text
+START_TEXT_FILE = "start_text.json"
+
+# Load start text from file or return default
+def load_start_text():
+    if os.path.exists(START_TEXT_FILE):
+        with open(START_TEXT_FILE, "r") as file:
+            data = json.load(file)
+            return data.get("start_text", CLONE_START_TXT)
+    return CLONE_START_TXT
+
+# Save custom start text to file
+def save_start_text(text):
+    with open(START_TEXT_FILE, "w") as file:
+        json.dump({"start_text": text}, file)
+
+# Command to set custom start text (Owner only)
+@Client.on_message(filters.command("start_text") & filters.private)
+async def set_start_text(client, message):
+    if message.from_user.id != 7357726710:  # Replace with your Telegram ID
+        await message.reply("You are not authorized to use this command.")
+        return
+
+    if len(message.command) < 2:
+        await message.reply("Please provide the new start text. Usage: `/start_text <new_text>`")
+        return
+
+    new_text = " ".join(message.command[1:])
+    save_start_text(new_text)
+    await message.reply(f"Start text updated to:\n\n{new_text}")
+
+@Client.on_message(filters.command("base_site") & filters.private)
+async def base_site_handler(client, m: Message):
+    user_id = m.from_user.id
+    user = await get_user(user_id)
+    cmd = m.command
+    text = f"/base_site (base_site)\n\nCurrent base site: None\n\n EX: /base_site shortnerdomain.com\n\nIf You Want To Remove Base Site Then Copy This And Send To Bot - `/base_site None`"
+    
+    if len(cmd) == 1:
+        return await m.reply(text=text, disable_web_page_preview=True)
+    elif len(cmd) == 2:
+        base_site = cmd[1].strip()
+        if not domain(base_site):
+            return await m.reply(text=text, disable_web_page_preview=True)
+        await update_user_info(user_id, {"base_site": base_site})
+        await m.reply("Base Site updated successfully")
+    else:
+        await m.reply("You are not authorized to use this command.")
+
+# Don't Remove Credit Tg - @VJ_Botz
+# Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
+# Ask Doubt on telegram @KingVJ01
+
 @Client.on_message(filters.command("base_site") & filters.private)
 async def base_site_handler(client, m: Message):
     user_id = m.from_user.id

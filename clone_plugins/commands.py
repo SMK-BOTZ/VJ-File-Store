@@ -48,48 +48,40 @@ def get_size(size):
 
 @Client.on_message(filters.command("start") & filters.incoming)
 async def start(client, message):
-    me = await client.get_me()
-    cd = await db.get_bot(me.id)
-
     # Check if the user exists in the database, otherwise add them
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)
-
+    
     # Default buttons
     buttons = [[
-        InlineKeyboardButton(' sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇl', url='https://youtube.com/@Tech_VJ')
-    ], [
-        InlineKeyboardButton(' ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{me.username}?start=clone')
-    ], [
-        InlineKeyboardButton('‍♀️ ʜᴇʟᴘ', callback_data='help'),
-        InlineKeyboardButton('ᴀʙᴏᴜᴛ ', callback_data='about')
+        InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
+        ],[
+        InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
+        ],[
+        InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
+        InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
     ]]
-
-    # Add Update Channel button if availabl
-        if cd["update_channel_link"] != None:
-            up = cd["update_channel_link"]
-            buttons.append([InlineKeyboardButton('🍿 ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ 🍿', url=up)])
+    
+    # Get bot and user information
+    me2 = (await client.get_me()).mention
     reply_markup = InlineKeyboardMarkup(buttons)
-
-    # Load or use default start text
+    
+    # Check for custom start text or use default
     try:
         start_text = load_start_text()  # Function to load the start text
     except Exception:
         start_text = CLONE_START_TXT  # Fallback to default
-
+    
     # Format the start message
-    start_message = start_text.format(
-        message.from_user.mention,
-        me.username,
-        me.first_name
-    )
-
-    # Send the start message without the photo
-    await message.reply(
-        text=start_message,
+    start_message = start_text.format(message.from_user.mention, me2)
+    
+    # Send the start message with the random photo and buttons
+    await message.reply_photo(
+        photo=random.choice(PICS),
+        caption=start_message,
         reply_markup=reply_markup
     )
-    
+
 
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
@@ -198,39 +190,17 @@ def save_start_text(text):
 # Command to set custom start text (Owner only)
 @Client.on_message(filters.command("start_text") & filters.private)
 async def set_start_text(client, message):
-    # Fetch the bot's information
-    me = await client.get_me()
-    bot_id = me.id
-
-    # Fetch the bot's owner details from the database
-    owner = mongo_db.bots.find_one({'bot_id': bot_id})
-    
-    # Validate if the bot has an owner
-    if not owner:
-        await message.reply("**Owner details not found in the database.**")
+    if message.from_user.id != 7357726710:  # Replace with your Telegram ID
+        await message.reply("You are not authorized to use this command.")
         return
 
-    owner_id = int(owner['user_id'])
-
-    # Check if the user invoking the command is the bot owner
-    if message.from_user.id != owner_id:
-        await message.reply("❌ **You are not authorized to use this command.**")
-        return
-
-    # Check if a new start text is provided
     if len(message.command) < 2:
-        await message.reply("❌ **Please provide the new start text. Usage: /start_text <new_text>**")
+        await message.reply("Please provide the new start text. Usage: `/start_text <new_text>`")
         return
 
-    # Join the command arguments into the new start text
     new_text = " ".join(message.command[1:])
-    
-    # Save the new start text
     save_start_text(new_text)
-    
-    # Confirm the update
-    await message.reply(f"✅ **Start text updated to:**\n\n{new_text}")
-
+    await message.reply(f"Start text updated to:\n\n{new_text}")
 
 @Client.on_message(filters.command("base_site") & filters.private)
 async def base_site_handler(client, m: Message):
@@ -254,46 +224,6 @@ async def base_site_handler(client, m: Message):
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
-@Client.on_message(filters.command("settings") & filters.private)
-async def settings(client, message):
-    # Get the bot's information
-    me = await client.get_me()
-    bot_id = me.id
-
-    # Fetch the bot's owner details from the database
-    owner = mongo_db.bots.find_one({'bot_id': bot_id})
-    
-    # Validate if the bot has an owner
-    if not owner:
-        await message.reply("**Owner details not found in the database.**")
-        return
-
-    owner_id = int(owner['user_id'])
-
-    # Check if the user invoking the command is the bot owner
-    if message.from_user.id != owner_id:
-        await message.reply("❌ **You are not authorized to access these settings.**")
-        return
-
-    # Ask the owner for the update channel link
-    link = await client.ask(
-        message.chat.id,
-        "<b>Now Send Me Your Update Channel Link, Which Will Be Shown In Your Start Button And Below File Button.</b>"
-    )
-
-    # Validate the link format
-    if not link.text.startswith(('https://', 'http://')):
-        await message.reply("❌ **Invalid Link. Please start the process again by using - /settings.**")
-        return
-
-    # Update the bot's settings in the database
-    data = {'update_channel_link': link.text}
-    mongo_db.bots.update_one({'bot_id': bot_id}, {'$set': data})
-
-    # Confirmation message
-    await message.reply("✅ **Successfully Added Update Channel Link.**")
-
-
 
 @Client.on_callback_query()
 async def cb_handler(client: Client, query: CallbackQuery):
@@ -302,24 +232,18 @@ async def cb_handler(client: Client, query: CallbackQuery):
     elif query.data == "start":
         # Default buttons
         buttons = [[
-            InlineKeyboardButton(' sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇl', url='https://youtube.com/@Tech_VJ')
+            InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
         ], [
-            InlineKeyboardButton(' ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
+            InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
         ], [
-            InlineKeyboardButton('‍♀️ ʜᴇʟᴘ', callback_data='help'),
-            InlineKeyboardButton('ᴀʙᴏᴜᴛ ', callback_data='about')
+            InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
+            InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
         ]]
         
-        # Add "Join Update Channel" button if configured
-        me = await client.get_me()
-        cd = await db.get_bot(me.id)
-        if cd["update_channel_link"] != None:
-            up = cd["update_channel_link"]
-            buttons.append([InlineKeyboardButton('🍿 ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇ ᴄʜᴀɴɴᴇʟ 🍿', url=up)])
         reply_markup = InlineKeyboardMarkup(buttons)
-
+        
         # Get bot and user information
-        me2 = me.mention
+        me2 = (await client.get_me()).mention
         
         # Load custom start text or use default
         try:
@@ -330,15 +254,20 @@ async def cb_handler(client: Client, query: CallbackQuery):
         # Format the start message
         start_message = start_text.format(query.from_user.mention, me2)
         
-        # Update the text only
+        # Update the media and text
+        await client.edit_message_media(
+            chat_id=query.message.chat.id,
+            message_id=query.message.id,
+            media=InputMediaPhoto(random.choice(PICS))
+        )
         await query.message.edit_text(
             text=start_message,
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
-         )
+        )
 
 
-# Don' Remove Credit Tg - @VJ_Botz
+# Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 

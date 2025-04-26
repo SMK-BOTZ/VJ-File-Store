@@ -1,5 +1,5 @@
 import asyncio
-from config import Config
+from config import *
 import pyrogram
 from pyrogram import Client, filters, enums
 from pyrogram.errors import FloodWait, UserNotParticipant
@@ -12,10 +12,10 @@ async def ForceSub(c: Client, m: Message):
     Force users to subscribe to one or more channels before using the bot.
     """
 
-    if not Config.UPDATES_CHANNEL:
+    if not UPDATES_CHANNEL:
         return 200  # No force_sub channel(s) specified
 
-    channels: List[Union[str, int]] = Config.UPDATES_CHANNEL  # Expect a list in Config
+    channels: List[Union[str, int]] = UPDATES_CHANNEL  # Expect a list in Config
     if not isinstance(channels, list):
         channels = [channels]  # Ensure it's a list
 
@@ -66,7 +66,7 @@ async def ForceSub(c: Client, m: Message):
         return 200
     else:
         keyboard_rows = [join_buttons[i:i + 2] for i in range(0, len(join_buttons), 2)]
-        keyboard_rows.append([InlineKeyboardButton("↻ Tʀʏ Aɢᴀɪɴ", url=Config.BOT_START_LINK)]) # Use Config var
+        keyboard_rows.append([InlineKeyboardButton("↻ Tʀʏ Aɢᴀɪɴ", url=BOT_START_LINK)]) # Use Config var
 
         await c.send_message(
             chat_id=user_id,

@@ -1,6 +1,7 @@
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
+from plugins.forcesub import ForceSub
 
 import os
 import logging
@@ -54,6 +55,12 @@ def formate_file_name(file_name):
 
 @Client.on_message(filters.command("start") & filters.incoming)
 async def start(client, message):
+
+        # Check for force subscription
+    Fsub = await ForceSub(client, message)
+    if Fsub == 400:
+        return
+    
     username = client.me.username
     if not await db.is_user_exist(message.from_user.id):
         await db.add_user(message.from_user.id, message.from_user.first_name)

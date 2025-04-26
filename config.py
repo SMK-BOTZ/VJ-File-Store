@@ -38,6 +38,10 @@ CDB_NAME = environ.get("CDB_NAME", "clonetechvj")
 DB_URI = environ.get("DB_URI", "mongodb+srv://misssiyaofficial:zzx4322CU68rU8gw@cluster0.frhwbd1.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 DB_NAME = environ.get("DB_NAME", "techvjbotz")
 
+# ... other config variables ...
+UPDATES_CHANNEL = ["-1002549170360", "-1002630469734", "-1002630469734" , "-1002416394936"]  # List of channel IDs
+BOT_START_LINK = "https://t.me/your_bot_username?start=start_" # Add this line
+
 # Auto Delete Information
 AUTO_DELETE_MODE = bool(environ.get('AUTO_DELETE_MODE', True)) # Set True or False
 

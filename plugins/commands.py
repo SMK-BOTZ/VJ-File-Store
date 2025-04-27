@@ -2,7 +2,7 @@
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 from pyrogram import Client, filters
-from forcesub import UPDATES_CHANNEL  # Import your list
+from plugins.forcesub import UPDATES_CHANNEL  # Import your list
 
 import os
 import logging

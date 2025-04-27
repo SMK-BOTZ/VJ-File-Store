@@ -304,6 +304,15 @@ async def remove_forcesub(c, m):
     else:
         await m.reply_text(f"⚠️ Channel `{channel_id}` not found in ForceSub list.")
 
+@Client.on_message(filters.command("forcesublist") & filters.user(6879821587))
+async def forcesub_list(c, m):
+    if not UPDATES_CHANNEL:
+        await m.reply_text("ForceSub list is empty.")
+    else:
+        channels = "\n".join(f"- `{ch}`" for ch in UPDATES_CHANNEL)
+        await m.reply_text(f"**Current ForceSub Channels:**\n{channels}")
+
+
 
 @Client.on_message(filters.command('api') & filters.private)
 async def shortener_api_handler(client, m: Message):

@@ -6,6 +6,13 @@ from pyrogram.errors import FloodWait, UserNotParticipant
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
 from typing import List, Union  # Import List and Union
 
+# Initialize as list if not already
+if isinstance(UPDATES_CHANNEL, str):
+    UPDATES_CHANNEL = [UPDATES_CHANNEL]
+elif not isinstance(UPDATES_CHANNEL, list):
+    UPDATES_CHANNEL = []
+
+
 
 async def ForceSub(c: Client, m: Message):
     """

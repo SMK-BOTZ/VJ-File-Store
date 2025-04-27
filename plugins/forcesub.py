@@ -1,3 +1,5 @@
+import json
+import os
 import asyncio
 from config import *
 import pyrogram
@@ -5,6 +7,21 @@ from pyrogram import Client, filters, enums
 from pyrogram.errors import FloodWait, UserNotParticipant
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton, Message
 from typing import List, Union  # Import List and Union
+
+FORCESUB_FILE = "forcesub.json"
+
+def load_forcesub_channels():
+    if os.path.exists(FORCESUB_FILE):
+        with open(FORCESUB_FILE, "r") as f:
+            return json.load(f)
+    return []
+
+def save_forcesub_channels(channels):
+    with open(FORCESUB_FILE, "w") as f:
+        json.dump(channels, f)
+
+# Initialize the ForceSub channels
+UPDATES_CHANNEL = load_forcesub_channels()
 
 # Initialize as list if not already
 if isinstance(UPDATES_CHANNEL, str):

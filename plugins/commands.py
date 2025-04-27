@@ -1,7 +1,8 @@
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
-from plugins.forcesub import ForceSub
+from pyrogram import Client, filters
+from forcesub import UPDATES_CHANNEL  # Import your list
 
 import os
 import logging
@@ -278,6 +279,31 @@ async def start(client, message):
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
+
+@Client.on_message(filters.command("addforcesub") & filters.user(6879821587))  # Replace with your admin ID
+async def add_forcesub(c, m):
+    if len(m.command) < 2:
+        await m.reply_text("Usage: /addforcesub <channel_id>")
+        return
+    channel_id = m.command[1]
+    if channel_id not in UPDATES_CHANNEL:
+        UPDATES_CHANNEL.append(channel_id)
+        await m.reply_text(f"✅ Channel `{channel_id}` added to ForceSub list.")
+    else:
+        await m.reply_text(f"⚠️ Channel `{channel_id}` is already in ForceSub list.")
+
+@Client.on_message(filters.command("removeforcesub") & filters.user(6879821587))  # Replace with your admin ID
+async def remove_forcesub(c, m):
+    if len(m.command) < 2:
+        await m.reply_text("Usage: /removeforcesub <channel_id>")
+        return
+    channel_id = m.command[1]
+    if channel_id in UPDATES_CHANNEL:
+        UPDATES_CHANNEL.remove(channel_id)
+        await m.reply_text(f"✅ Channel `{channel_id}` removed from ForceSub list.")
+    else:
+        await m.reply_text(f"⚠️ Channel `{channel_id}` not found in ForceSub list.")
+
 
 @Client.on_message(filters.command('api') & filters.private)
 async def shortener_api_handler(client, m: Message):

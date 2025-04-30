@@ -1,4 +1,4 @@
-from dbusers import clonedb
+from clone_plugins.dbusers import clonedb
 
 import json
 import os

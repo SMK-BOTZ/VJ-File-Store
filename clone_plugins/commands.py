@@ -112,7 +112,7 @@ async def start(client, message):
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
-@Client.on_message(filters.command("addforcesub") & filters.user(ADMINS))  # Replace with your admin ID
+@Client.on_message(filters.command("addforcesub") & filters.user(7329787597))  # Replace with your admin ID
 async def add_forcesub(c, m):
     if len(m.command) < 2:
         await m.reply_text("Usage: /addforcesub <channel_id>")
@@ -124,7 +124,7 @@ async def add_forcesub(c, m):
     else:
         await m.reply_text(f"⚠️ Channel `{channel_id}` is already in ForceSub list.")
 
-@Client.on_message(filters.command("removeforcesub") & filters.user(ADMINS))  # Replace with your admin ID
+@Client.on_message(filters.command("removeforcesub") & filters.user(7329787597))  # Replace with your admin ID
 async def remove_forcesub(c, m):
     if len(m.command) < 2:
         await m.reply_text("Usage: /removeforcesub <channel_id>")
@@ -136,7 +136,7 @@ async def remove_forcesub(c, m):
     else:
         await m.reply_text(f"⚠️ Channel `{channel_id}` not found in ForceSub list.")
 
-@Client.on_message(filters.command("forcesublist") & filters.user(ADMINS))
+@Client.on_message(filters.command("forcesublist") & filters.user(7329787597))
 async def forcesub_list(c, m):
     if not UPDATES_CHANNEL:
         await m.reply_text("ForceSub list is empty.")

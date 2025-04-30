@@ -193,36 +193,36 @@ async def base_site_handler(client, m: Message):
 @Client.on_callback_query()
 async def cb_handler(client: Client, query: CallbackQuery):
     me = await client.get_me()
+
     if query.data == "close_data":
         await query.message.delete()
-    elif query.data == "start":
 
-    # Check for force subscription
-    Fsub = await ForceSub(client, message)
-    if Fsub == 400:
-        return
-        
+    elif query.data == "start":
+        # Check for force subscription
+        Fsub = await ForceSub(client, query.message)
+        if Fsub == 400:
+            return
+
         buttons = [[
             InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
-            ],[
+        ], [
             InlineKeyboardButton('🤖 ᴄʀᴇᴀᴛᴇ ʏᴏᴜʀ ᴏᴡɴ ᴄʟᴏɴᴇ ʙᴏᴛ', url=f'https://t.me/{BOT_USERNAME}?start=clone')
-            ],[
+        ], [
             InlineKeyboardButton('💁‍♀️ ʜᴇʟᴘ', callback_data='help'),
             InlineKeyboardButton('ᴀʙᴏᴜᴛ 🔻', callback_data='about')
         ]]
-        
+
         reply_markup = InlineKeyboardMarkup(buttons)
         await client.edit_message_media(
-            query.message.chat.id, 
-            query.message.id, 
-            InputMediaPhoto(random.choice(PICS))
+            chat_id=query.message.chat.id,
+            message_id=query.message.id,
+            media=InputMediaPhoto(media=random.choice(PICS))
         )
         await query.message.edit_text(
             text=script.CLONE_START_TXT.format(query.from_user.mention, me.mention),
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
-
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01

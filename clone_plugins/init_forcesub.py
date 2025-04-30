@@ -1,5 +1,5 @@
 import asyncio
-from dbusers import clonedb
+from clone_plugins.dbusers import clonedb
 
 # Replace with your actual force-subscribe channel IDs
 INITIAL_CHANNELS = ["-1001234567890", "-1009876543210"]  # Add your channel IDs here

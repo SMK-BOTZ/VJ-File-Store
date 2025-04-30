@@ -1,3 +1,5 @@
+from dbusers import clonedb
+
 import json
 import os
 import asyncio
@@ -10,41 +12,28 @@ from typing import List, Union  # Import List and Union
 
 FORCESUB_FILE = "forcesub.json"
 
-def load_forcesub_channels():
-    if os.path.exists(FORCESUB_FILE):
-        with open(FORCESUB_FILE, "r") as f:
-            return json.load(f)
-    return []
+async def load_forcesub_channels():
+    data = await clonedb.find_one("forcesub", {"_id": "force_sub_channels"})
+    return data["channels"] if data and "channels" in data else []
 
-def save_forcesub_channels(channels):
-    with open(FORCESUB_FILE, "w") as f:
-        json.dump(channels, f)
-
-# Initialize the ForceSub channels
-UPDATES_CHANNEL = load_forcesub_channels()
-
-# Initialize as list if not already
-if isinstance(UPDATES_CHANNEL, str):
-    UPDATES_CHANNEL = [UPDATES_CHANNEL]
-elif not isinstance(UPDATES_CHANNEL, list):
-    UPDATES_CHANNEL = []
-
-
+async def save_forcesub_channels(channels):
+    await clonedb.update_one(
+        "forcesub",
+        {"_id": "force_sub_channels"},
+        {"$set": {"channels": channels}},
+        upsert=True
+    )
 
 async def ForceSub(c: Client, m: Message):
     """
     Force users to subscribe to one or more channels before using the bot.
     """
 
-    if not UPDATES_CHANNEL:
-        return 200  # No force_sub channel(s) specified
-
-    channels: List[Union[str, int]] = UPDATES_CHANNEL  # Expect a list in Config
-    if not isinstance(channels, list):
-        channels = [channels]  # Ensure it's a list
+    channels: List[Union[str, int]] = await load_forcesub_channels()
+    if not channels:
+        return 200  # No channels set for force-subscribe
 
     user_id = m.from_user.id
-    
     join_buttons = []
     all_subscribed = True
 
@@ -57,44 +46,48 @@ async def ForceSub(c: Client, m: Message):
                 await asyncio.sleep(e.x)
                 invite_link = await c.create_chat_invite_link(chat_id=channel_id)
             except Exception as err:
-                print(f"Uɴᴀʙʟᴇ ᴛᴏ ᴅᴏ ғᴏʀᴄᴇ sᴜʙsᴄʀɪʙᴇ ᴛᴏ {channel_id}\n\nError: {err}")
-                return 200  # Or handle this differently
+                print(f"Failed to create invite link for {channel_id}\nError: {err}")
+                return 200
 
             try:
                 user = await c.get_chat_member(chat_id=channel_id, user_id=user_id)
                 if user.status == "kicked":
                     await c.send_message(
                         chat_id=user_id,
-                        text="Sᴏʀʀʏ sɪʀ, ʏᴏᴜ ᴀʀᴇ ʙᴀɴɴᴇᴅ ᴛᴏ ᴜsᴇ ᴍᴇ ɪɴ ᴏɴᴇ ᴏʀ ᴍᴏʀᴇ ᴄʜᴀɴɴᴇʟs. Cᴏɴᴛᴀᴄᴛ ᴍʏ ᴀᴅᴍɪɴ.",
+                        text="You are banned from one or more required channels. Contact the admin.",
                         disable_web_page_preview=True,
                         parse_mode="Markdown",
                     )
                     return 400
             except UserNotParticipant:
                 all_subscribed = False
-                join_buttons.append(InlineKeyboardButton(text="ᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ", url=invite_link.invite_link))
+                join_buttons.append(
+                    InlineKeyboardButton("Join Channel", url=invite_link.invite_link)
+                )
             except Exception as e:
-                print(f"Error checking channel {channel_id}: {e}")
+                print(f"Error checking membership for {channel_id}: {e}")
                 await c.send_message(
                     chat_id=user_id,
-                    text="Sᴏᴍᴇᴛʜɪɴɢ ᴡᴇɴᴛ ᴡʀᴏɴɢ. Cᴏɴᴛᴀᴄᴛ ᴍʏ ᴀᴅᴍɪɴ.",
+                    text="Something went wrong. Please contact the admin.",
                     disable_web_page_preview=True,
                     parse_mode="Markdown",
                 )
                 return 400
         except Exception as e:
-            print(f"Error processing channel {channel_id}: {e}")
+            print(f"Unexpected error: {e}")
             return 400
 
     if all_subscribed:
         return 200
     else:
         keyboard_rows = [join_buttons[i:i + 2] for i in range(0, len(join_buttons), 2)]
-        keyboard_rows.append([InlineKeyboardButton("↻ Tʀʏ Aɢᴀɪɴ", url=BOT_START_LINK)]) # Use Config var
+        keyboard_rows.append([
+            InlineKeyboardButton("↻ Try Again", url=BOT_START_LINK)  # You must define BOT_START_LINK in config
+        ])
 
         await c.send_message(
             chat_id=user_id,
-            text="**Pʟᴇᴀsᴇ ᴊᴏɪɴ ᴍʏ ᴜᴘᴅᴀᴛᴇs ᴄʜᴀɴɴᴇʟs ᴛᴏ ᴜsᴇ ᴛʜɪs ʙᴏᴛ!**\n\n Oɴʟʏ ᴄʜᴀɴɴᴇʟ sᴜʙsᴄʀɪʙᴇʀs ᴄᴀɴ ᴜsᴇ ᴛʜᴇ ʙᴏᴛ!",
+            text="**Please join the required update channel(s) to use this bot!**",
             reply_markup=InlineKeyboardMarkup(keyboard_rows)
         )
         return 400

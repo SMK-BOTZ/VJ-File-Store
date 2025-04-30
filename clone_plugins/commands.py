@@ -1,6 +1,8 @@
 # Don't Remove Credit Tg - @VJ_Botz
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
+from pyrogram import Client, filters
+from plugins.forcesub import ForceSub, UPDATES_CHANNEL, save_forcesub_channels
 
 import os
 import logging
@@ -46,6 +48,12 @@ async def start(client, message):
     me = await client.get_me()
     if not await clonedb.is_user_exist(me.id, message.from_user.id):
         await clonedb.add_user(me.id, message.from_user.id)
+
+    # Check for force subscription
+    Fsub = await ForceSub(client, message)
+    if Fsub == 400:
+        return
+    
     if len(message.command) != 2:
         buttons = [[
             InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
@@ -104,6 +112,40 @@ async def start(client, message):
 # Subscribe YouTube Channel For Amazing Bot https://youtube.com/@Tech_VJ
 # Ask Doubt on telegram @KingVJ01
 
+@Client.on_message(filters.command("addforcesub") & filters.user(ADMINS))  # Replace with your admin ID
+async def add_forcesub(c, m):
+    if len(m.command) < 2:
+        await m.reply_text("Usage: /addforcesub <channel_id>")
+        return
+    channel_id = m.command[1]
+    if channel_id not in UPDATES_CHANNEL:
+        UPDATES_CHANNEL.append(channel_id)
+        await m.reply_text(f"✅ Channel `{channel_id}` added to ForceSub list.")
+    else:
+        await m.reply_text(f"⚠️ Channel `{channel_id}` is already in ForceSub list.")
+
+@Client.on_message(filters.command("removeforcesub") & filters.user(ADMINS))  # Replace with your admin ID
+async def remove_forcesub(c, m):
+    if len(m.command) < 2:
+        await m.reply_text("Usage: /removeforcesub <channel_id>")
+        return
+    channel_id = m.command[1]
+    if channel_id in UPDATES_CHANNEL:
+        UPDATES_CHANNEL.remove(channel_id)
+        await m.reply_text(f"✅ Channel `{channel_id}` removed from ForceSub list.")
+    else:
+        await m.reply_text(f"⚠️ Channel `{channel_id}` not found in ForceSub list.")
+
+@Client.on_message(filters.command("forcesublist") & filters.user(ADMINS))
+async def forcesub_list(c, m):
+    if not UPDATES_CHANNEL:
+        await m.reply_text("ForceSub list is empty.")
+    else:
+        channels = "\n".join(f"- `{ch}`" for ch in UPDATES_CHANNEL)
+        await m.reply_text(f"**Current ForceSub Channels:**\n{channels}")
+
+
+
 @Client.on_message(filters.command('api') & filters.private)
 async def shortener_api_handler(client, m: Message):
     user_id = m.from_user.id
@@ -154,6 +196,12 @@ async def cb_handler(client: Client, query: CallbackQuery):
     if query.data == "close_data":
         await query.message.delete()
     elif query.data == "start":
+
+    # Check for force subscription
+    Fsub = await ForceSub(client, message)
+    if Fsub == 400:
+        return
+        
         buttons = [[
             InlineKeyboardButton('💝 sᴜʙsᴄʀɪʙᴇ ᴍʏ ʏᴏᴜᴛᴜʙᴇ ᴄʜᴀɴɴᴇʟ', url='https://youtube.com/@Tech_VJ')
             ],[
